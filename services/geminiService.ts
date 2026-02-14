@@ -1,14 +1,11 @@
+
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ChatModelType } from "../types";
 
-// Helper to ensure API Key is present
+// Helper to ensure API Client is initialized correctly.
+// Strictly using process.env.API_KEY as per the hard requirement.
 const getAIClient = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    console.error("API Key not found in environment");
-    // In a real app, handle this gracefully. For this demo, we assume injection works.
-  }
-  return new GoogleGenAI({ apiKey: apiKey || '' });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 };
 
 // --- OMNI CHAT SERVICES ---
@@ -20,7 +17,7 @@ export const sendChatMessage = async (
   location?: GeolocationCoordinates
 ) => {
   const ai = getAIClient();
-  let modelName = 'gemini-flash-lite-latest'; // Default FAST
+  let modelName = 'gemini-3-flash-preview'; 
   let tools: any[] | undefined = undefined;
   let toolConfig: any | undefined = undefined;
   let thinkingConfig: any | undefined = undefined;
@@ -33,7 +30,8 @@ export const sendChatMessage = async (
       break;
     case ChatModelType.SMART:
       modelName = 'gemini-3-pro-preview';
-      thinkingConfig = { thinkingBudget: 32768 }; // Max thinking
+      // Gemini 3 Pro thinking budget maximum is 32768.
+      thinkingConfig = { thinkingBudget: 32768 };
       systemInstruction = "You are Ebo, a deep-thinking AI. Take your time to reason complexly.";
       break;
     case ChatModelType.SEARCH:
@@ -42,6 +40,7 @@ export const sendChatMessage = async (
       systemInstruction = "You are Ebo. Use Google Search to provide up-to-date information.";
       break;
     case ChatModelType.MAPS:
+      // Maps grounding is only supported in Gemini 2.5 series models.
       modelName = 'gemini-2.5-flash';
       tools = [{ googleMaps: {} }];
       if (location) {
@@ -58,8 +57,7 @@ export const sendChatMessage = async (
       break;
   }
 
-  // Convert history for the API if needed, or just use generateContent with the full context + new message
-  // For simplicity in this demo, we'll use a chat session.
+  // Use chat session for context management.
   const chat = ai.chats.create({
     model: modelName,
     config: {
@@ -87,7 +85,7 @@ export const analyzeMedia = async (
   isVideo: boolean
 ) => {
   const ai = getAIClient();
-  const model = 'gemini-3-pro-preview'; // Used for both Image and Video understanding
+  const model = 'gemini-3-pro-preview'; // Used for complex reasoning and media analysis
 
   const response = await ai.models.generateContent({
     model,
@@ -108,11 +106,7 @@ export const analyzeMedia = async (
 };
 
 export const generateProImage = async (prompt: string, size: '1K' | '2K' | '4K') => {
-  // Ensure we use the latest key for paid features
-  if (window.aistudio && await window.aistudio.hasSelectedApiKey()) {
-     // Re-init client to ensure we have the user-selected key if applicable
-  }
-  
+  // Always create a new instance right before use to ensure updated API key if selected.
   const ai = getAIClient();
   const model = 'gemini-3-pro-image-preview';
   
@@ -122,12 +116,12 @@ export const generateProImage = async (prompt: string, size: '1K' | '2K' | '4K')
     config: {
       imageConfig: {
         imageSize: size,
-        aspectRatio: '1:1' // Defaulting to square
+        aspectRatio: '1:1'
       }
     }
   });
 
-  // Extract image
+  // Iterating through parts as an image part is not guaranteed to be the first part.
   for (const part of response.candidates?.[0]?.content?.parts || []) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
@@ -180,10 +174,10 @@ export const generateSpeech = async (text: string) => {
   });
 
   const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  return base64Audio; // Returns raw base64 PCM usually, but SDK handles structure
+  return base64Audio;
 };
 
-// Helper for PCM decoding (used in TTS playback)
+// Manual PCM audio decoding following the coding guidelines to avoid standard file header requirements.
 export const decodeAudioData = async (
   base64Data: string,
   ctx: AudioContext,
@@ -201,10 +195,11 @@ export const decodeAudioData = async (
   const frameCount = dataInt16.length / numChannels;
   
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-  const channelData = buffer.getChannelData(0);
-  
-  for (let i = 0; i < frameCount; i++) {
-    channelData[i] = dataInt16[i] / 32768.0;
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
   }
   
   return buffer;

@@ -1,26 +1,14 @@
-import { type GenerateContentResponse } from "@google/genai";
+
 
 export enum AppMode {
-  DASHBOARD = 'DASHBOARD',
-  OMNI_CHAT = 'OMNI_CHAT',
-  LIVE_VOICE = 'LIVE_VOICE',
-  VISION_LAB = 'VISION_LAB',
-  AUDIO_SCRIBE = 'AUDIO_SCRIBE'
+  VISION_OS = 'VISION_OS'
 }
 
 export enum ChatModelType {
-  FAST = 'FAST', // gemini-2.5-flash-lite
-  SMART = 'SMART', // gemini-3-pro-preview (Thinking)
-  SEARCH = 'SEARCH', // gemini-3-flash-preview + Google Search
-  MAPS = 'MAPS' // gemini-2.5-flash + Google Maps
-}
-
-export interface NavigationData {
-  isActive: boolean;
-  destination: string | null;
-  direction: 'STRAIGHT' | 'LEFT' | 'RIGHT' | 'UTURN' | 'ARRIVED';
-  distance: string;
-  eta: string;
+  FAST = 'FAST',
+  SMART = 'SMART',
+  SEARCH = 'SEARCH',
+  MAPS = 'MAPS'
 }
 
 export interface ChatMessage {
@@ -28,14 +16,41 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: number;
-  isLoading?: boolean;
-  groundingMetadata?: any; // For search/maps results
-  images?: string[]; // Base64 strings
+  groundingMetadata?: any;
 }
 
-// Global window extension for AI Studio key selection
+export interface DriveState {
+  speed: number;
+  heading: number;
+  streetName: string;
+  isDriving: boolean;
+}
+
+export interface NavigationData {
+  isActive: boolean;
+  destination: string | null;
+  direction: 'STRAIGHT' | 'LEFT' | 'RIGHT' | 'UTURN' | 'ARRIVED';
+  distance: string;
+  instruction: string;
+}
+
+export interface HUDCard {
+  id: string;
+  type: 'SEARCH' | 'MAPS' | 'IMAGE' | 'INFO';
+  title: string;
+  content: string;
+}
+
+// Fixed: Defined AIStudio interface to resolve type mismatch and modifier conflict in global Window augmentation.
+export interface AIStudio {
+  hasSelectedApiKey: () => Promise<boolean>;
+  openSelectKey: () => Promise<void>;
+}
+
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext;
+    // Fixed: Marked aistudio as optional and used AIStudio type to match platform environment requirements.
+    aistudio?: AIStudio;
   }
 }

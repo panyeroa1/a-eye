@@ -1,6 +1,6 @@
 {
-  "name": "Ebo A-eye",
-  "description": "The next-generation AI assistant featuring Live Audio, 4K Image Generation, Deep Thinking, and Real-time Grounding with Search and Maps.",
+  "name": "Ebo A-eye Co-Pilot",
+  "description": "Minimalist Vision OS co-pilot with deep background metadata processing and proactive spatial audio.",
   "requestFramePermissions": [
     "camera",
     "microphone",
