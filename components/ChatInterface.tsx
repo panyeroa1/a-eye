@@ -9,7 +9,7 @@ export const ChatInterface: React.FC = () => {
     {
       id: 'init',
       role: 'model',
-      text: "SYSTEM ONLINE. EBO AI READY. AWAITING INPUT.",
+      text: "I am Eburon AI, an AI developed under the guidance and vision of my founder, Jo Lernout. My purpose is to assist you with deep analysis, creative tasks, and complex problem-solving. How can I help you today?",
       timestamp: Date.now()
     }
   ]);
@@ -45,9 +45,9 @@ export const ChatInterface: React.FC = () => {
       const modelMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: result.response.text || "NO DATA RECEIVED.",
+        text: result.text || "NO DATA RECEIVED.",
         timestamp: Date.now(),
-        groundingMetadata: result.response.candidates?.[0]?.groundingMetadata
+        groundingMetadata: result.candidates?.[0]?.groundingMetadata
       };
       setMessages(prev => [...prev, modelMsg]);
     } catch (error) {
@@ -101,8 +101,8 @@ export const ChatInterface: React.FC = () => {
            <button onClick={() => setMode(ChatModelType.SEARCH)} className={mode === ChatModelType.SEARCH ? "text-blue-400 text-glow" : "hover:text-blue-400"}>[NET]</button>
            <button onClick={() => setMode(ChatModelType.MAPS)} className={mode === ChatModelType.MAPS ? "text-green-400 text-glow" : "hover:text-green-400"}>[LOC]</button>
         </div>
-        <div className="text-[10px] text-gray-500 font-mono-tech">
-           {isLoading ? "PROCESSING..." : "IDLE"}
+        <div className="text-[10px] text-gray-500 font-mono-tech uppercase">
+           {isLoading ? "Analyzing..." : "Ready"}
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export const ChatInterface: React.FC = () => {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end text-right' : 'items-start text-left'}`}>
             <span className="text-[9px] font-mono-tech text-gray-600 mb-1 tracking-widest uppercase">
-              {msg.role === 'user' ? '>> PILOT' : '>> EBO'} {new Date(msg.timestamp).toLocaleTimeString([],{hour12:false})}
+              {msg.role === 'user' ? '>> PILOT' : '>> EBURON'} {new Date(msg.timestamp).toLocaleTimeString([],{hour12:false})}
             </span>
             <div className={`max-w-[85%] ${msg.role === 'user' ? 'text-white' : 'text-cyan-100'} text-sm md:text-base leading-relaxed font-light`}>
               <div className="prose prose-invert prose-sm">
@@ -126,7 +126,7 @@ export const ChatInterface: React.FC = () => {
         ))}
         {isLoading && (
           <div className="text-cyan-500/50 text-xs font-mono-tech animate-pulse flex items-center gap-2">
-            <Loader2 size={12} className="animate-spin"/> COMPUTING RESPONSE...
+            <Loader2 size={12} className="animate-spin"/> COMPILING DATA...
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -141,7 +141,7 @@ export const ChatInterface: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="ENTER COMMAND OR QUERY..."
+            placeholder="COMMUNICATE WITH EBURON..."
             className="flex-1 bg-transparent border-none outline-none text-white font-mono-tech text-sm placeholder-gray-700"
             autoFocus
           />
